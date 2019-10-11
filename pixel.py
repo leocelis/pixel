@@ -1,50 +1,36 @@
 import MySQLdb
 from flask import request
-from flask.ext.restful import Resource
-from flask.ext.restful import reqparse
+from flask_restful import Resource
+from flask_restful import reqparse
+
 from logger import logger
 from mysqlfunc import get_connect
 from sqlqueries import SAVE_EVENT_SQL
 
 parser = reqparse.RequestParser()
-parser.add_argument('event', type=str)
-parser.add_argument('age_group', type=str)
-parser.add_argument('user_agent', type=str)
-parser.add_argument('ip', type=str)
 parser.add_argument('ad_id', type=str)
-parser.add_argument('gender', type=str)
-parser.add_argument('email', type=str)
-parser.add_argument('channel', type=str)
-parser.add_argument('client', type=str)
-parser.add_argument('device', type=str)
+parser.add_argument('event_name', type=str)
+parser.add_argument('value', type=str)
 
 
 class Pixel(Resource):
     def get(self):
         params = parser.parse_args()
-        client = params['client']
-        ip = params['ip'] if params['ip'] else request.remote_addr
-        user_agent = params['user_agent']
-        gender = params['gender']
-        email = params['email']
-        age_group = params['age_group']
-        event_name = params['event']
+
         ad_id = params['ad_id']
-        channel = params['channel']
-        device = params['device']
+        event_name = params['event_name']
+        value = params['value']
+        user_agent = request.headers.get('User-Agent')
+        referrer = request.headers.get("Referer")
+        ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
 
         sql = SAVE_EVENT_SQL.format(
+            ad_id=ad_id,
             event_name=event_name,
-            client=client,
-            value="",
+            value=value,
             ip=ip,
             user_agent=user_agent,
-            gender=gender,
-            email=email,
-            age_group=age_group,
-            ad_id=ad_id,
-            channel=channel,
-            device=device).encode('utf-8')
+            referrer=referrer).encode('utf-8')
 
         try:
             conn = get_connect()
@@ -52,10 +38,10 @@ class Pixel(Resource):
             cursor.execute(sql)
             conn.commit()
 
-        except MySQLdb.OperationalError, e:
+        except MySQLdb.OperationalError as e:
             message = "EVENT MISSED: {sql} - ERROR {e}".format(sql=sql, e=e)
             logger.error(message)
-        except MySQLdb.ProgrammingError, e:
+        except MySQLdb.ProgrammingError as e:
             message = "EVENT MISSED: {sql} - ERROR {e}".format(sql=sql, e=e)
             logger.error(message)
         finally:

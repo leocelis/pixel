@@ -1,7 +1,5 @@
 SAVE_EVENT_SQL = u"""
-INSERT INTO events (event_name, client, value, ip, user_agent, gender, email, 
-	age_group, ad_id, channel, device)
+INSERT INTO events (ad_id, event_name, value, ip, user_agent)
 VALUES
-("{event_name}", "{client}", "{value}", "{ip}", "{user_agent}", "{gender}", 
-	"{email}", "{age_group}", "{ad_id}", "{channel}", "{device}")
+("{ad_id}", "{event_name}", "{value}", "{ip}", "{user_agent}")
 """

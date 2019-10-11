@@ -1,6 +1,6 @@
 import logging
 
-logger_path = "/var/log/pixel.log"
+logger_path = "./pixel.log"
 
 format = "{pixel} " \
          "time=%(asctime)s " \
